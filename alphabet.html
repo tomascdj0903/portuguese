@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alphabet &amp; phonétique — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-6xl mx-auto px-5 md:px-8 py-14 md:py-20">
+  <div class="max-w-2xl mb-12">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Fondamentaux</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Alphabet &amp; phonétique</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed">Chaque lettre a deux boutons : <b class="text-neutral-700 dark:text-neutral-300">🔤 son nom</b> pour entendre comment on la <i>nomme</i> (comme épeler « bé » en français), et <b class="text-neutral-700 dark:text-neutral-300">📖 un exemple</b> pour l'entendre dans un mot.</p>
+  </div>
+
+  <!-- French-speaker traps -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-8">
+    <h2 class="font-display font-semibold text-lg mb-1">Sons clés à ne pas confondre</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Les onze sons qui distinguent l'accent du Portugal — et ceux qui n'existent pas en français.</p>
+    <div id="soundList" class="grid gap-3"></div>
+    <div class="mt-6 rounded-xl bg-accent-50 dark:bg-accent-950/50 border border-accent-100 dark:border-accent-900 p-4 text-[13.5px] text-accent-900 dark:text-accent-200 leading-relaxed">
+      <b class="font-semibold">Le piège n°1 du francophone :</b> l'accent du Portugal « avale » les voyelles non accentuées. <i>pequeno</i> se dit presque « p'kénou », <i>escola</i> presque « chcola ». C'est pour cela qu'il paraît plus rapide et plus chuchoté que le brésilien — et beaucoup plus difficile à comprendre au début.
+    </div>
+  </div>
+
+  <!-- Letters -->
+  <div class="mb-8">
+    <h2 class="font-display font-semibold text-lg mb-1">Les 26 lettres — comment on les nomme</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Indispensable pour épeler son nom au téléphone ou à un guichet.</p>
+    <div id="alphaGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+  </div>
+
+  <!-- IPA -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-8">
+    <h2 class="font-display font-semibold text-lg mb-1">Alphabet phonétique international (API)</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Chaque son a un symbole unique, utilisé par tous les dictionnaires. Les trois diphtongues nasales n'ont aucun équivalent français.</p>
+    <div id="ipaGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+  </div>
+
+  <!-- EP vs BP -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-12">
+    <h2 class="font-display font-semibold text-lg mb-1">Portugal vs Brésil — le vocabulaire</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Utiliser le mot brésilien au Portugal se remarque instantanément. Voici les écarts les plus fréquents.</p>
+    <div class="overflow-x-auto thin-scroll">
+      <table class="w-full text-sm min-w-[420px]">
+        <tr class="text-left text-[11px] uppercase tracking-wide text-neutral-400">
+          <th class="pb-2 pr-3 font-medium">🇵🇹 Portugal</th><th class="pb-2 pr-3 font-medium">🇧🇷 Brésil</th><th class="pb-2 font-medium">Français</th>
+        </tr>
+        <tbody id="epbpBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div>
+    <h2 class="font-display font-semibold text-xl mb-6">Mini-quiz — alphabet &amp; sons</h2>
+    <div id="quizRoot" class="max-w-2xl rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 shadow-softer">
+      <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-7"><div id="qProgressFill" class="h-full bg-accent-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+      <div id="qArea"></div>
+      <div id="qResult" class="hidden text-center"></div>
+    </div>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome('alphabet.html')){
+
+document.getElementById('soundList').innerHTML = soundData.map(([chip,title,desc,ex1,ex2])=>`
+  <div class="flex gap-4 items-start rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
+    <div class="shrink-0 w-16 text-center rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-display font-bold text-sm py-2">${chip}</div>
+    <p class="text-[13.5px] text-neutral-600 dark:text-neutral-300 leading-relaxed">
+      <b class="text-neutral-900 dark:text-white">${title}</b> — ${desc}
+      <span class="inline-flex items-center gap-1 ml-1"><i>${ex1}</i>${speakBtnHtml(ex1)}</span>,
+      <span class="inline-flex items-center gap-1"><i>${ex2}</i>${speakBtnHtml(ex2)}</span>
+    </p>
+  </div>`).join('');
+
+document.getElementById('alphaGrid').innerHTML = alphaData.map(([l,name,note,ex])=>`
+  <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 text-center">
+    <b class="font-display text-2xl block">${l}</b>
+    <div class="text-[11px] text-neutral-400 mt-1 mb-3 leading-tight min-h-[26px]">${note}</div>
+    <div class="flex flex-col gap-1.5">
+      ${speakBtnHtml(name, '🔤 « '+name+' »')}
+      ${speakBtnHtml(ex, '📖 '+ex)}
+    </div>
+  </div>`).join('');
+
+document.getElementById('ipaGrid').innerHTML = ipaData.map(([ipa,letters,ex,desc])=>`
+  <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
+    <div class="font-display font-bold text-accent-700 dark:text-accent-400">${ipa}</div>
+    <div class="text-[11px] uppercase tracking-wide text-neutral-400 mt-0.5 mb-2">${letters}</div>
+    <div class="flex items-center gap-1.5 font-semibold text-sm mb-1.5">${ex} ${speakBtnHtml(ex)}</div>
+    <div class="text-[12.5px] text-neutral-500 dark:text-neutral-400 leading-snug">${desc}</div>
+  </div>`).join('');
+
+document.getElementById('epbpBody').innerHTML = epVsBp.map(([pt,br,fr])=>`
+  <tr class="border-t border-neutral-100 dark:border-neutral-800">
+    <td class="py-2.5 pr-3 font-semibold"><span class="inline-flex items-center gap-1.5">${pt} ${speakBtnHtml(pt)}</span></td>
+    <td class="py-2.5 pr-3 text-neutral-400">${br}</td>
+    <td class="py-2.5 text-neutral-500 dark:text-neutral-400">${fr}</td>
+  </tr>`).join('');
+
+runQuiz(document.getElementById('quizRoot'), alphabetQuizData, {
+  onFinish: (score,total)=>{
+    document.getElementById('qResult').innerHTML = `
+      <div class="font-display text-5xl font-bold text-accent-700 dark:text-accent-400">${score}<span class="text-2xl text-neutral-300 dark:text-neutral-700"> / ${total}</span></div>
+      <p class="text-neutral-500 dark:text-neutral-400 mt-4 mb-6">Les sons sont la fondation de tout le reste. Reviens-y dès que la prononciation coince.</p>
+      <div class="flex justify-center gap-2 flex-wrap">
+        <a href="lesson.html?module=${nextModuleKey()}" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Continuer mon parcours →</a>
+        <button type="button" onclick="location.reload()" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Refaire le quiz</button>
+      </div>`;
+  }
+});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examen CAPLE — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-3xl mx-auto px-5 md:px-8 py-12 md:py-16">
+
+  <!-- INTRO -->
+  <div id="introScreen" class="hidden">
+    <a href="exames.html" class="text-[13px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">← Tous les examens</a>
+    <div class="flex items-center gap-2 mt-5 mb-3">
+      <span class="text-[11px] font-bold px-2 py-1 rounded-md bg-accent-600 text-white" id="exLevel"></span>
+      <span class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">Examen blanc CAPLE</span>
+    </div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight" id="exCode"></h1>
+    <div class="text-[13px] text-neutral-400 mt-1.5" id="exFullName"></div>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed" id="exSubtitle"></p>
+
+    <div id="exFlagship" class="hidden mt-5 rounded-2xl border border-neutral-900 dark:border-white bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 p-4 text-[13.5px] font-semibold"></div>
+
+    <h2 class="font-display font-semibold text-lg mt-10 mb-4">Structure de l'épreuve</h2>
+    <div class="space-y-2.5" id="exSections"></div>
+
+    <div class="mt-8 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+      <b class="text-neutral-900 dark:text-white">Conditions d'examen.</b> Chaque épreuve est chronométrée et se termine automatiquement à la fin du temps imparti. On ne revient pas en arrière. Il faut <b class="text-neutral-900 dark:text-white">55%</b> pondérés pour être admis. Prévois du calme et un micro fonctionnel pour l'épreuve orale.
+    </div>
+
+    <button type="button" id="startExamBtn" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition shadow-soft">Commencer l'examen →</button>
+  </div>
+
+  <!-- SECTION BRIEF -->
+  <div id="briefScreen" class="hidden text-center py-10">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400 mb-3" id="briefStep"></div>
+    <div class="text-4xl mb-4" id="briefIcon">📖</div>
+    <h2 class="font-display text-2xl md:text-3xl font-bold tracking-tight mb-2" id="briefName"></h2>
+    <div class="text-[13.5px] text-neutral-400 mb-6" id="briefNamePt"></div>
+    <div class="flex justify-center gap-3 mb-6 flex-wrap">
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-2.5">
+        <div class="text-[10.5px] text-neutral-400 uppercase tracking-wide">Temps imparti</div>
+        <div class="font-display font-bold" id="briefTime"></div>
+      </div>
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-2.5">
+        <div class="text-[10.5px] text-neutral-400 uppercase tracking-wide">Poids</div>
+        <div class="font-display font-bold" id="briefWeight"></div>
+      </div>
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-2.5">
+        <div class="text-[10.5px] text-neutral-400 uppercase tracking-wide">Durée officielle</div>
+        <div class="font-display font-bold" id="briefOfficial"></div>
+      </div>
+    </div>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 max-w-md mx-auto mb-8 leading-relaxed" id="briefNote"></p>
+    <button type="button" id="briefStartBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Démarrer l'épreuve →</button>
+  </div>
+
+  <!-- RUNNING -->
+  <div id="runScreen" class="hidden">
+    <div class="sticky top-16 z-30 -mx-5 md:-mx-8 px-5 md:px-8 py-3 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 mb-8">
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <div class="text-[11px] text-neutral-400 uppercase tracking-wide" id="runStep"></div>
+          <div class="font-display font-semibold text-[14px] truncate" id="runName"></div>
+        </div>
+        <div class="text-right shrink-0">
+          <div class="text-[10.5px] text-neutral-400 uppercase tracking-wide">Temps restant</div>
+          <div class="font-display font-bold text-lg tabular-nums" id="runTimer">--:--</div>
+        </div>
+      </div>
+      <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mt-2.5">
+        <div id="runTimerFill" class="h-full bg-accent-600 rounded-full" style="width:100%"></div>
+      </div>
+    </div>
+    <div id="runBody"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultScreen" class="hidden">
+    <div class="text-center mb-10">
+      <div class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400 mb-3">Résultat</div>
+      <div class="text-5xl mb-4" id="resIcon">🎓</div>
+      <div class="font-display text-6xl md:text-7xl font-bold" id="resPct">0%</div>
+      <div class="font-display text-2xl font-bold mt-2" id="resGrade"></div>
+      <div class="text-[13.5px] text-neutral-500 dark:text-neutral-400 mt-1" id="resGradeFr"></div>
+      <p class="text-neutral-500 dark:text-neutral-400 mt-5 max-w-md mx-auto leading-relaxed text-[14.5px]" id="resMessage"></p>
+    </div>
+
+    <h2 class="font-display font-semibold text-lg mb-4">Résultats par épreuve</h2>
+    <div class="space-y-2.5 mb-8" id="resBreakdown"></div>
+
+    <div id="resModels" class="mb-8"></div>
+
+    <div class="flex justify-center gap-2 flex-wrap">
+      <a href="exames.html" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Tous les examens</a>
+      <button type="button" id="retryBtn" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3.5 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Repasser l'examen</button>
+      <a href="index.html" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3.5 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Retour au parcours</a>
+    </div>
+  </div>
+
+  <div id="notFound" class="hidden text-center py-24">
+    <div class="text-4xl mb-4">🤔</div>
+    <h1 class="font-display text-2xl font-bold mb-3">Examen introuvable</h1>
+    <a href="exames.html" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold">Voir tous les examens</a>
+  </div>
+
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome(null)){
+
+const examKey = new URLSearchParams(location.search).get('exam');
+const exam = CAPLE_EXAMS[examKey];
+
+if(!exam){
+  document.getElementById('notFound').classList.remove('hidden');
+} else {
+  const SECTION_ICONS = { reading:'📖', listening:'🎧', writing:'✍️', speaking:'🎤' };
+  const sectionScores = {};      // key → 0..100
+  const writingAnswers = [];     // for showing model answers at the end
+  let stepIdx = 0;
+  let timerId = null;
+
+  /* ---------- Intro ---------- */
+  document.getElementById('introScreen').classList.remove('hidden');
+  document.getElementById('exLevel').textContent = exam.level;
+  document.getElementById('exCode').textContent = exam.code;
+  document.getElementById('exFullName').textContent = exam.fullName;
+  document.getElementById('exSubtitle').textContent = exam.subtitle;
+  if(exam.flagship){
+    const f = document.getElementById('exFlagship');
+    f.classList.remove('hidden');
+    f.textContent = '★ ' + exam.flagship;
+  }
+  document.getElementById('exSections').innerHTML = exam.sections.filter(s=>!s.partOf).map(s=>`
+    <div class="flex items-center gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4">
+      <span class="text-xl shrink-0">${SECTION_ICONS[s.type]}</span>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-[14px]">${s.fr}</div>
+        <div class="text-[11.5px] text-neutral-400 truncate">${s.name}</div>
+      </div>
+      <div class="text-right shrink-0">
+        <div class="font-display font-bold text-[13px] text-accent-600 dark:text-accent-400">${s.weight}%</div>
+        <div class="text-[11px] text-neutral-400">${s.officialMinutes} min</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('startExamBtn').addEventListener('click', ()=>{
+    document.getElementById('introScreen').classList.add('hidden');
+    showBrief();
+  });
+
+  /* ---------- Step navigation ---------- */
+  function show(id){
+    ['introScreen','briefScreen','runScreen','resultScreen'].forEach(x=>{
+      document.getElementById(x).classList.toggle('hidden', x !== id);
+    });
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  function showBrief(){
+    if(stepIdx >= exam.sections.length){ finishExam(); return; }
+    const s = exam.sections[stepIdx];
+    show('briefScreen');
+    document.getElementById('briefStep').textContent = `Épreuve ${stepIdx+1} sur ${exam.sections.length}`;
+    document.getElementById('briefIcon').textContent = SECTION_ICONS[s.type];
+    document.getElementById('briefName').textContent = s.fr;
+    document.getElementById('briefNamePt').textContent = s.name;
+    document.getElementById('briefTime').textContent = s.practiceMinutes + ' min';
+    document.getElementById('briefWeight').textContent = s.partOf ? 'incluse' : s.weight + '%';
+    document.getElementById('briefOfficial').textContent = s.officialMinutes ? s.officialMinutes + ' min' : '—';
+    const notes = {
+      reading: "Lis les textes puis réponds aux questions. Tu peux écouter le texte si tu veux travailler l'oreille en même temps.",
+      listening: "Chaque enregistrement peut être réécouté, y compris au ralenti — comme en conditions réelles, où les textes sont diffusés deux fois.",
+      writing: "Respecte le nombre de mots imposé : c'est un critère de notation officiel. Un modèle de réponse te sera montré à la fin.",
+      speaking: "Parle à voix haute après avoir cliqué sur le micro. Ta prononciation est comparée à un modèle portugais.",
+    };
+    document.getElementById('briefNote').textContent = s.note ? s.note + ' ' + notes[s.type] : notes[s.type];
+    document.getElementById('briefStartBtn').onclick = ()=> runSection(s);
+  }
+
+  /* ---------- Timer ---------- */
+  function startTimer(minutes, onExpire){
+    const total = minutes * 60;
+    let left = total;
+    const label = document.getElementById('runTimer');
+    const fill = document.getElementById('runTimerFill');
+    function tick(){
+      const m = Math.floor(left/60), sec = left%60;
+      label.textContent = m + ':' + pad2(sec);
+      fill.style.width = (left/total*100) + '%';
+      label.classList.toggle('text-rose-600', left <= 30);
+      fill.classList.toggle('bg-rose-500', left <= 30);
+      fill.classList.toggle('bg-accent-600', left > 30);
+      if(left <= 0){ clearInterval(timerId); timerId = null; onExpire(); return; }
+      left--;
+    }
+    tick();
+    clearInterval(timerId);
+    timerId = setInterval(tick, 1000);
+  }
+  function stopTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
+
+  /* ---------- Section runners ---------- */
+  function completeSection(s, pct){
+    stopTimer();
+    // null means "could not be assessed" (e.g. no speech recognition available);
+    // such a section is excluded from the weighting rather than scored zero.
+    sectionScores[s.key] = pct == null ? null : Math.max(0, Math.min(100, Math.round(pct)));
+    stepIdx++;
+    showBrief();
+  }
+
+  function runSection(s){
+    show('runScreen');
+    document.getElementById('runStep').textContent = `Épreuve ${stepIdx+1} / ${exam.sections.length}`;
+    document.getElementById('runName').textContent = s.fr;
+    const body = document.getElementById('runBody');
+    body.innerHTML = '';
+
+    if(s.type === 'reading')   return runReading(s, body);
+    if(s.type === 'listening') return runListening(s, body);
+    if(s.type === 'writing')   return runWriting(s, body);
+    if(s.type === 'speaking')  return runSpeaking(s, body);
+  }
+
+  /* --- Reading --- */
+  function runReading(s, body){
+    let correct = 0, total = 0, answered = 0;
+    s.texts.forEach(t => total += t.questions.length);
+
+    body.innerHTML = s.texts.map((t,ti)=>`
+      <div class="mb-10">
+        <h3 class="font-display font-semibold text-lg mb-1">Texto ${ti+1} — ${t.title}</h3>
+        ${t.source ? `<div class="text-[11.5px] text-neutral-400 mb-3">${t.source}</div>` : ''}
+        <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/50 p-5 mb-3 text-[14.5px] leading-[1.75] text-neutral-700 dark:text-neutral-300 whitespace-pre-line">${t.text}</div>
+        <div class="flex justify-end mb-6">${speakBtnHtml(t.text.replace(/\s+/g,' ').slice(0,600), '🔊 Écouter')}</div>
+        <div class="space-y-6">
+          ${t.questions.map((q,qi)=>`
+            <div class="exam-q" data-ti="${ti}" data-qi="${qi}">
+              <div class="font-semibold text-[14.5px] mb-2.5">${qi+1}. ${q.q}</div>
+              <div class="grid gap-2">
+                ${q.opts.map((o,oi)=>`<button type="button" class="ex-opt w-full text-left px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-[13.5px] font-medium hover:border-neutral-900 dark:hover:border-white transition" data-ti="${ti}" data-qi="${qi}" data-oi="${oi}">${o}</button>`).join('')}
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('') + `
+      <div class="flex justify-end pb-10">
+        <button type="button" id="finishSectionBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Terminer l'épreuve →</button>
+      </div>`;
+
+    body.querySelectorAll('.ex-opt').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const ti = +btn.dataset.ti, qi = +btn.dataset.qi, oi = +btn.dataset.oi;
+        const block = body.querySelector(`.exam-q[data-ti="${ti}"][data-qi="${qi}"]`);
+        if(block.dataset.done) return;
+        block.dataset.done = '1';
+        answered++;
+        block.querySelectorAll('.ex-opt').forEach(b=>{ b.disabled = true; b.classList.add('opacity-60'); });
+        btn.classList.remove('opacity-60');
+        btn.className = 'ex-opt w-full text-left px-4 py-3 rounded-xl border-2 border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-900 text-[13.5px] font-medium';
+        if(oi === s.texts[ti].questions[qi].a) correct++;
+      });
+    });
+
+    body.querySelector('#finishSectionBtn').addEventListener('click', ()=> completeSection(s, total ? correct/total*100 : 0));
+    startTimer(s.practiceMinutes, ()=> completeSection(s, total ? correct/total*100 : 0));
+  }
+
+  /* --- Listening --- */
+  function runListening(s, body){
+    let idx = 0, correct = 0;
+    const items = s.items;
+
+    function renderItem(){
+      if(idx >= items.length){ completeSection(s, correct/items.length*100); return; }
+      const it = items[idx];
+      body.innerHTML = `
+        <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 shadow-softer">
+          <div class="text-[11px] font-semibold text-neutral-400 mb-4">Enregistrement ${idx+1} / ${items.length}</div>
+          <div class="text-center my-6">
+            <button type="button" id="playBtn" class="w-16 h-16 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-2xl flex items-center justify-center hover:scale-105 transition mx-auto">🔊</button>
+            <button type="button" id="slowBtn" class="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 px-3 py-1.5 text-[12px] font-semibold text-neutral-500 hover:border-neutral-900 dark:hover:border-white transition">🐢 Plus lentement</button>
+          </div>
+          <div class="font-display text-lg font-semibold mb-4">${it.q}</div>
+          <div class="grid gap-2">
+            ${it.opts.map((o,oi)=>`<button type="button" class="lst-opt w-full text-left px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-[14px] font-medium hover:border-neutral-900 dark:hover:border-white transition" data-oi="${oi}">${o}</button>`).join('')}
+          </div>
+        </div>`;
+      body.querySelector('#playBtn').addEventListener('click', ()=> speak(it.audio));
+      body.querySelector('#slowBtn').addEventListener('click', ()=> speak(it.audio, 0.6));
+      setTimeout(()=> speak(it.audio), 400);
+      body.querySelectorAll('.lst-opt').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          body.querySelectorAll('.lst-opt').forEach(b=> b.disabled = true);
+          btn.className = 'lst-opt w-full text-left px-4 py-3.5 rounded-xl border-2 border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-900 text-[14px] font-medium';
+          if(+btn.dataset.oi === it.a) correct++;
+          idx++;
+          setTimeout(renderItem, 500);
+        });
+      });
+    }
+    renderItem();
+    startTimer(s.practiceMinutes, ()=> completeSection(s, correct/items.length*100));
+  }
+
+  /* --- Writing --- */
+  function runWriting(s, body){
+    let taskIdx = 0;
+    const taskScores = [];
+
+    function renderTask(){
+      if(taskIdx >= s.tasks.length){
+        const avg = taskScores.length ? taskScores.reduce((a,b)=>a+b,0)/taskScores.length : 0;
+        completeSection(s, avg);
+        return;
+      }
+      const t = s.tasks[taskIdx];
+      body.innerHTML = `
+        <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8">
+          <div class="text-[11px] font-semibold text-neutral-400 mb-3">Tarefa ${taskIdx+1} / ${s.tasks.length}</div>
+          <div class="font-display text-lg font-semibold mb-2 leading-snug">${t.prompt}</div>
+          <div class="text-[13.5px] text-neutral-500 dark:text-neutral-400 mb-4 leading-relaxed">${t.fr}</div>
+          <div class="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 mb-4">
+            ${t.minWords}–${t.maxWords} mots exigés
+          </div>
+          <textarea id="wArea" rows="10" spellcheck="false"
+            class="w-full px-4 py-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14.5px] leading-relaxed focus:outline-none focus:border-neutral-900 dark:focus:border-white transition resize-y"
+            placeholder="Escreva aqui…"></textarea>
+          ${accentBarHtml()}
+          <div class="flex items-center justify-between mt-3">
+            <span class="text-[12.5px] font-semibold" id="wCount">0 mot</span>
+            <span class="text-[12px] text-neutral-400" id="wStatus"></span>
+          </div>
+          <div class="flex justify-end mt-6">
+            <button type="button" id="submitTaskBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Valider et continuer →</button>
+          </div>
+        </div>`;
+
+      const area = body.querySelector('#wArea');
+      const countEl = body.querySelector('#wCount');
+      const statusEl = body.querySelector('#wStatus');
+      wireAccentBar(body, area);
+
+      function wordCount(){ return area.value.trim() ? area.value.trim().split(/\s+/).length : 0; }
+      function update(){
+        const n = wordCount();
+        countEl.textContent = n + ' mot' + (n>1?'s':'');
+        if(n === 0){ statusEl.textContent = ''; countEl.className='text-[12.5px] font-semibold text-neutral-400'; }
+        else if(n < t.minWords){ statusEl.textContent = `Encore ${t.minWords-n} mot(s) minimum`; countEl.className='text-[12.5px] font-semibold text-amber-600'; }
+        else if(n > t.maxWords){ statusEl.textContent = `${n-t.maxWords} mot(s) de trop`; countEl.className='text-[12.5px] font-semibold text-amber-600'; }
+        else { statusEl.textContent = '✓ Dans la fourchette'; countEl.className='text-[12.5px] font-semibold text-accent-600'; }
+      }
+      area.addEventListener('input', update);
+      update();
+      area.focus();
+
+      body.querySelector('#submitTaskBtn').addEventListener('click', ()=> showChecklist(t, area.value, wordCount()));
+    }
+
+    /* Self-assessment against the official criteria, then the model answer. */
+    function showChecklist(t, text, n){
+      const inRange = n >= t.minWords && n <= t.maxWords;
+      body.innerHTML = `
+        <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8">
+          <h3 class="font-display font-semibold text-lg mb-1">Auto-évaluation</h3>
+          <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5 leading-relaxed">Le CAPLE note la production écrite sur des critères précis. Coche honnêtement ce que ton texte contient — c'est ce qui déterminera ta note pour cette tâche.</p>
+
+          <div class="rounded-xl border ${inRange ? 'border-accent-200 dark:border-accent-900 bg-accent-50 dark:bg-accent-950/40' : 'border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30'} p-4 mb-5 text-[13px]">
+            <b>${inRange ? '✓' : '⚠️'} Longueur : ${n} mots</b> — exigé : ${t.minWords} à ${t.maxWords}.
+            ${inRange ? ' Critère rempli.' : ' Hors fourchette : des points sont retirés à l\'examen réel.'}
+          </div>
+
+          <div class="space-y-2 mb-6">
+            ${t.checklist.map((c,ci)=>`
+              <label class="flex items-start gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 p-3.5 cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-600 transition">
+                <input type="checkbox" class="chk mt-0.5 w-4 h-4 accent-neutral-900 dark:accent-white shrink-0" data-ci="${ci}">
+                <span class="text-[13.5px]">${c}</span>
+              </label>`).join('')}
+          </div>
+
+          <details class="rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden mb-6">
+            <summary class="cursor-pointer list-none p-4 font-semibold text-[13.5px] hover:bg-neutral-50 dark:hover:bg-neutral-900 transition">📄 Voir une réponse modèle</summary>
+            <div class="px-4 pb-4 text-[13.5px] leading-relaxed text-neutral-600 dark:text-neutral-300 whitespace-pre-line border-t border-neutral-100 dark:border-neutral-900 pt-4">${t.model}</div>
+          </details>
+
+          <div class="flex justify-end">
+            <button type="button" id="nextTaskBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Continuer →</button>
+          </div>
+        </div>`;
+
+      writingAnswers.push({ prompt:t.prompt, text, model:t.model, words:n, range:[t.minWords,t.maxWords] });
+
+      body.querySelector('#nextTaskBtn').addEventListener('click', ()=>{
+        const checked = body.querySelectorAll('.chk:checked').length;
+        const criteriaPct = t.checklist.length ? checked/t.checklist.length*100 : 0;
+        // Half the mark is meeting the word count, half is meeting the content criteria.
+        taskScores.push(inRange ? 50 + criteriaPct/2 : criteriaPct/2);
+        taskIdx++;
+        renderTask();
+      });
+    }
+
+    renderTask();
+    startTimer(s.practiceMinutes, ()=>{
+      const avg = taskScores.length ? taskScores.reduce((a,b)=>a+b,0)/taskScores.length : 0;
+      completeSection(s, avg);
+    });
+  }
+
+  /* --- Speaking --- */
+  function runSpeaking(s, body){
+    let idx = 0;
+    const scores = [];
+
+    function renderTask(){
+      if(idx >= s.tasks.length){ finishSpeaking(); return; }
+      const t = s.tasks[idx];
+      body.innerHTML = `
+        <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8">
+          <div class="text-[11px] font-semibold text-neutral-400 mb-3">Tarefa ${idx+1} / ${s.tasks.length}</div>
+          <div class="font-display text-lg font-semibold mb-2 leading-snug">${t.prompt}</div>
+          <div class="text-[13.5px] text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">${t.fr}</div>
+          <div class="rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5">
+            <div id="micMount"></div>
+          </div>
+          <div class="flex items-center justify-between mt-6 gap-3 flex-wrap">
+            <span class="text-[12px] text-neutral-400">Réponds en portugais, à voix haute. Tu peux réessayer autant que tu veux.</span>
+            <button type="button" id="nextSpeakBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Continuer →</button>
+          </div>
+        </div>`;
+      let best = 0, got = false;
+      renderMicExercise(body.querySelector('#micMount'), {pt:t.model, fr:t.fr}, (sc)=>{
+        if(sc >= 0){ got = true; if(sc > best) best = sc; }
+      });
+      body.querySelector('#nextSpeakBtn').addEventListener('click', ()=>{
+        if(got) scores.push(best);
+        idx++;
+        renderTask();
+      });
+    }
+    function finishSpeaking(){
+      // If not one attempt was captured across the whole section — no speech
+      // recognition, mic permission denied, no hardware — we mark it unscored
+      // (null) instead of zero, and renormalise the weighting over the sections
+      // she could actually sit. Scoring her zero for her browser's limitations
+      // would put a pass out of reach for reasons that have nothing to do with
+      // her Portuguese.
+      completeSection(s, scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null);
+    }
+    renderTask();
+    startTimer(s.practiceMinutes, finishSpeaking);
+  }
+
+  /* ---------- Final weighted result ---------- */
+  function finishExam(){
+    stopTimer();
+
+    // Sections marked partOf are folded into their parent, 50/50.
+    const scored = [];
+    exam.sections.filter(s=>!s.partOf).forEach(s=>{
+      const children = exam.sections.filter(c => c.partOf === s.key);
+      const raw = sectionScores[s.key];
+      if(raw == null && !children.length){
+        scored.push({ section:s, pct:null, children });   // not assessable
+        return;
+      }
+      let pct = raw != null ? raw : 0;
+      if(children.length){
+        const childAvg = children.reduce((a,c)=> a + (sectionScores[c.key] || 0), 0) / children.length;
+        pct = (pct + childAvg) / 2;
+      }
+      scored.push({ section:s, pct: Math.round(pct), children });
+    });
+
+    // Renormalise over the sections that could actually be assessed.
+    const assessed = scored.filter(x => x.pct != null);
+    const totalWeight = assessed.reduce((a,x)=> a + x.section.weight, 0);
+    const finalPct = Math.round(assessed.reduce((a,x)=> a + x.pct * x.section.weight, 0) / (totalWeight || 1));
+    const skipped = scored.filter(x => x.pct == null);
+    const grade = capleGrade(finalPct);
+    const passed = finalPct >= CAPLE_PASS;
+
+    // Persist best result
+    const rec = progress.exams[examKey] || { best:0, attempts:0 };
+    rec.attempts++;
+    if(finalPct > (rec.best||0)) rec.best = finalPct;
+    rec.last = finalPct;
+    progress.exams[examKey] = rec;
+    saveProgress();
+    refreshProgressWidgets();
+
+    show('resultScreen');
+    document.getElementById('resIcon').textContent = finalPct>=85 ? '🏆' : passed ? '🎓' : '📚';
+    document.getElementById('resPct').textContent = finalPct + '%';
+    const gradeCls = { accent:'text-accent-700 dark:text-accent-400', amber:'text-amber-600 dark:text-amber-400', rose:'text-neutral-400' }[grade.cls];
+    document.getElementById('resPct').className = 'font-display text-6xl md:text-7xl font-bold ' + gradeCls;
+    document.getElementById('resGrade').textContent = grade.label;
+    document.getElementById('resGrade').className = 'font-display text-2xl font-bold mt-2 ' + gradeCls;
+    document.getElementById('resGradeFr').textContent = grade.fr;
+    document.getElementById('resMessage').textContent = passed
+      ? `Admise. À l'examen réel, ce résultat te vaudrait ${exam.level === 'A1' || exam.level === 'A2' ? 'le certificat' : 'le diplôme'} ${exam.code}${exam.flagship ? ' — ' + exam.flagship.toLowerCase() + '.' : '.'}`
+      : `Il faut 55% pour être admise. Reprends les modules du niveau ${exam.level}, puis retente : l'examen ne bouge pas, toi si.`;
+
+    document.getElementById('resBreakdown').innerHTML = scored.map(x=>{
+      if(x.pct == null){
+        return `
+        <div class="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold text-[14px] flex items-center gap-2">${SECTION_ICONS[x.section.type]} ${x.section.fr}</div>
+              <div class="text-[11.5px] text-neutral-400">Non évaluée — aucune prise de parole n'a été captée</div>
+            </div>
+            <div class="font-display font-bold text-[13px] text-neutral-400 shrink-0">—</div>
+          </div>
+        </div>`;
+      }
+      const g = capleGrade(x.pct);
+      const cls = { accent:'text-accent-700 dark:text-accent-400', amber:'text-amber-600 dark:text-amber-400', rose:'text-rose-500' }[g.cls];
+      return `
+      <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="min-w-0">
+            <div class="font-semibold text-[14px] flex items-center gap-2">${SECTION_ICONS[x.section.type]} ${x.section.fr}${x.children.length ? ' + production écrite' : ''}</div>
+            <div class="text-[11.5px] text-neutral-400">Coefficient ${x.section.weight}%</div>
+          </div>
+          <div class="font-display font-bold text-lg ${cls} shrink-0">${x.pct}%</div>
+        </div>
+        <div class="h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-700 ${x.pct>=CAPLE_PASS?'bg-accent-600':'bg-rose-400'}" style="width:${x.pct}%"></div>
+        </div>
+      </div>`;
+    }).join('') + (skipped.length ? `
+      <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 text-[12.5px] text-amber-900 dark:text-amber-300 leading-relaxed">
+        Aucune prise de parole n'a été enregistrée pour l'épreuve orale : ta note a donc été calculée sur les autres épreuves uniquement, sans te pénaliser. Si le micro n'a pas fonctionné, vérifie l'autorisation dans ton navigateur (<b>Chrome</b> ou <b>Edge</b> recommandés) et refais l'examen pour un résultat complet.
+      </div>` : '');
+
+    if(writingAnswers.length){
+      document.getElementById('resModels').innerHTML = `
+        <h2 class="font-display font-semibold text-lg mb-4">Tes productions écrites</h2>
+        <div class="space-y-3">
+          ${writingAnswers.map(w=>`
+            <details class="rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <summary class="cursor-pointer list-none p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition">
+                <div class="font-semibold text-[13.5px] leading-snug">${w.prompt}</div>
+                <div class="text-[11.5px] text-neutral-400 mt-1">${w.words} mots (exigé : ${w.range[0]}–${w.range[1]}) · cliquer pour comparer avec le modèle</div>
+              </summary>
+              <div class="border-t border-neutral-100 dark:border-neutral-900 p-4 grid md:grid-cols-2 gap-5">
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wide text-neutral-400 mb-2">Ta réponse</div>
+                  <div class="text-[13px] leading-relaxed whitespace-pre-line text-neutral-700 dark:text-neutral-300">${w.text ? w.text.replace(/</g,'&lt;') : '<i class="text-neutral-400">(vide)</i>'}</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-semibold uppercase tracking-wide text-accent-600 dark:text-accent-400 mb-2">Modèle</div>
+                  <div class="text-[13px] leading-relaxed whitespace-pre-line text-neutral-700 dark:text-neutral-300">${w.model}</div>
+                </div>
+              </div>
+            </details>`).join('')}
+        </div>`;
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', ()=> location.reload());
+  }
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de positionnement — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-3xl mx-auto px-5 md:px-8 py-14 md:py-20">
+
+  <!-- INTRO -->
+  <div id="introScreen">
+    <div id="requiredNotice" class="hidden mb-8 rounded-2xl border border-accent-200 dark:border-accent-900 bg-accent-50 dark:bg-accent-950/50 p-5">
+      <div class="font-display font-semibold text-accent-900 dark:text-accent-200 mb-1">Une étape avant de commencer</div>
+      <p class="text-[13.5px] text-accent-800/80 dark:text-accent-300/80 leading-relaxed">Le parcours s'adapte à ton niveau réel : les exercices, leur difficulté et les modules débloqués en dépendent. Ce test est donc obligatoire — mais il ne dure que quelques minutes, et tu pourras le refaire quand tu veux.</p>
+    </div>
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Avant de commencer</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Test de positionnement</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed">Le test est <b class="text-neutral-700 dark:text-neutral-200">adaptatif</b> : il commence au niveau A1 et monte tant que tu réussis. Il s'arrête dès que ça devient trop difficile — inutile de répondre à des questions hors de portée.</p>
+
+    <div class="grid sm:grid-cols-3 gap-3 mt-8">
+      <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+        <div class="text-xl mb-2">📈</div>
+        <div class="font-display font-semibold text-[15px]">6 paliers</div>
+        <div class="text-[12.5px] text-neutral-500 dark:text-neutral-400 mt-1">De A1 (débutant) à C2 (bilingue).</div>
+      </div>
+      <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+        <div class="text-xl mb-2">⏱️</div>
+        <div class="font-display font-semibold text-[15px]">5 à 15 min</div>
+        <div class="text-[12.5px] text-neutral-500 dark:text-neutral-400 mt-1">Selon jusqu'où tu montes.</div>
+      </div>
+      <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+        <div class="text-xl mb-2">🔊</div>
+        <div class="font-display font-semibold text-[15px]">Avec du son</div>
+        <div class="text-[12.5px] text-neutral-500 dark:text-neutral-400 mt-1">Chaque palier a une question d'écoute.</div>
+      </div>
+    </div>
+
+    <button type="button" id="startBtn" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition shadow-soft">Commencer le test →</button>
+    <p class="mt-4 text-[12.5px] text-neutral-400">Aucune mauvaise réponse : réponds au plus juste, c'est tout.</p>
+  </div>
+
+  <!-- TEST -->
+  <div id="testScreen" class="hidden">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <div class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">Palier en cours</div>
+        <div class="font-display text-2xl font-bold" id="currentLevelLabel">A1</div>
+      </div>
+      <div class="flex gap-1" id="levelDots"></div>
+    </div>
+    <div id="quizRoot" class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-7 md:p-9 shadow-softer">
+      <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-7"><div id="qProgressFill" class="h-full bg-accent-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+      <div id="qArea"></div>
+      <div id="qResult" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultScreen" class="hidden text-center">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Résultat</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight mb-2">Ton niveau de départ</h1>
+    <div class="inline-flex items-baseline gap-3 mt-6 mb-2">
+      <span class="font-display text-6xl md:text-7xl font-bold text-accent-600 dark:text-accent-400" id="resLevel">A1</span>
+    </div>
+    <div class="font-display text-xl font-semibold" id="resName"></div>
+    <p class="text-neutral-500 dark:text-neutral-400 mt-4 mb-2 max-w-md mx-auto leading-relaxed text-[14.5px]" id="resBlurb"></p>
+    <p class="text-[13px] text-neutral-400 max-w-md mx-auto leading-relaxed" id="resDetail"></p>
+
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 mt-8 text-left max-w-md mx-auto">
+      <div class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400 mb-3">Ce que ça change</div>
+      <ul class="space-y-2.5 text-[13.5px] text-neutral-600 dark:text-neutral-300" id="resEffects"></ul>
+    </div>
+
+    <div class="flex justify-center gap-2 mt-8 flex-wrap">
+      <a href="index.html" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition shadow-soft">Voir mon parcours →</a>
+      <button type="button" id="restartBtn" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3.5 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Refaire le test</button>
+    </div>
+  </div>
+
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+initSharedChrome(null, {skipPlacementGate:true});
+
+if(new URLSearchParams(location.search).get('required')){
+  document.getElementById('requiredNotice').classList.remove('hidden');
+}
+
+/* ---- Adaptive engine: climb the levels until she stops passing ---- */
+let levelIdx = 0;
+const perLevel = {};   // {A1:{score,total}, ...}
+
+function renderDots(){
+  document.getElementById('levelDots').innerHTML = PLACEMENT_LEVELS.map((lv,i)=>{
+    const done = perLevel[lv];
+    const cls = done
+      ? (done.score >= PLACEMENT_THRESHOLD ? 'bg-accent-600' : 'bg-rose-400')
+      : (i === levelIdx ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-800');
+    return `<span class="w-2 h-2 rounded-full ${cls} transition" title="${lv}"></span>`;
+  }).join('');
+}
+
+function runLevel(){
+  const lv = PLACEMENT_LEVELS[levelIdx];
+  document.getElementById('currentLevelLabel').textContent = lv + ' — ' + LEVEL_INFO[lv].fr;
+  renderDots();
+  const root = document.getElementById('quizRoot');
+  root.querySelector('#qArea').classList.remove('hidden');
+  root.querySelector('#qResult').classList.add('hidden');
+
+  runQuiz(root, PLACEMENT_BANK[lv], {
+    adaptive:false, srs:false,     // the placement test must not skew the learning engine
+    onFinish: (score,total)=>{
+      perLevel[lv] = {score,total};
+      renderDots();
+      if(score >= PLACEMENT_THRESHOLD && levelIdx < PLACEMENT_LEVELS.length - 1){
+        levelIdx++;
+        showLevelUp();
+      } else if(score >= PLACEMENT_THRESHOLD){
+        finishPlacement(PLACEMENT_LEVELS.length - 1);  // passed C2
+      } else {
+        // Failed this tier → she belongs one tier below (or A1 if she failed the very first).
+        finishPlacement(levelIdx === 0 ? 0 : levelIdx - 1);
+      }
+    }
+  });
+}
+
+function showLevelUp(){
+  const root = document.getElementById('quizRoot');
+  const lv = PLACEMENT_LEVELS[levelIdx];
+  root.querySelector('#qResult').innerHTML = `
+    <div class="text-center py-4">
+      <div class="text-4xl mb-3">✅</div>
+      <div class="font-display text-xl font-bold mb-2">Palier réussi</div>
+      <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-6 max-w-xs mx-auto leading-relaxed">On monte d'un cran. Prochain palier : <b class="text-neutral-800 dark:text-neutral-200">${lv} — ${LEVEL_INFO[lv].fr}</b>.</p>
+      <button type="button" id="nextLevelBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Continuer →</button>
+    </div>`;
+  root.querySelector('#nextLevelBtn').addEventListener('click', runLevel);
+}
+
+function finishPlacement(finalIdx){
+  const code = PLACEMENT_LEVELS[finalIdx];
+  const info = LEVEL_INFO[code];
+  const totalScore = Object.values(perLevel).reduce((a,b)=>a+b.score,0);
+  const totalAsked = Object.values(perLevel).reduce((a,b)=>a+b.total,0);
+
+  progress.level = { code, label: info.fr, score: totalScore, total: totalAsked };
+  saveProgress();
+  refreshProgressWidgets();
+
+  document.getElementById('testScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.remove('hidden');
+  document.getElementById('resLevel').textContent = code;
+  document.getElementById('resName').textContent = info.fr + ' · ' + info.name;
+  document.getElementById('resBlurb').textContent = info.blurb;
+  document.getElementById('resDetail').textContent =
+    `${totalScore} bonnes réponses sur ${totalAsked} questions posées, à travers ${Object.keys(perLevel).length} palier(s).`;
+
+  const mods = modulesForLevel(code);
+  const unlockedBelow = LEVELS.indexOf(code);
+  document.getElementById('resEffects').innerHTML = [
+    `<b class="text-neutral-900 dark:text-white">Ton parcours démarre au module « ${mods[0] ? MODULE_DATA[mods[0]].title : '—'} »</b>, pas à zéro.`,
+    unlockedBelow > 0
+      ? `Les <b class="text-neutral-900 dark:text-white">${unlockedBelow} niveau(x) en dessous</b> restent ouverts si tu veux réviser.`
+      : `Tout part des fondations : alphabet, sons, premières phrases.`,
+    `Les exercices s'adapteront ensuite à tes résultats réels, en durcissant quand tu progresses.`,
+    `Ton objectif long terme : l'examen <b class="text-neutral-900 dark:text-white">${info.exam}</b>, puis les suivants jusqu'au DUPLE C2.`,
+  ].map(t=>`<li class="flex gap-2.5"><span class="text-accent-600 shrink-0">→</span><span>${t}</span></li>`).join('');
+}
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  document.getElementById('introScreen').classList.add('hidden');
+  document.getElementById('testScreen').classList.remove('hidden');
+  runLevel();
+});
+document.getElementById('restartBtn').addEventListener('click', ()=> location.href = 'placement.html');
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prononciation — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-2xl mx-auto px-5 md:px-8 py-14 md:py-20">
+  <div class="mb-8 text-center">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Entraînement libre</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Prononciation</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed">Écoute le modèle, clique sur le micro, répète. Ta prononciation est comparée au portugais européen.</p>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-1.5 mb-8" id="catBtns"></div>
+
+  <div id="micNoSupport" class="hidden mb-6 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 p-4 text-[13px] text-center leading-relaxed">
+    La reconnaissance vocale n'est pas disponible sur ce navigateur — utilise <b>Chrome</b> ou <b>Edge</b> (ordinateur ou Android) pour la pratique au micro. Tu peux quand même écouter tous les modèles.
+  </div>
+
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 shadow-softer">
+    <div id="pronoMount"></div>
+    <div class="text-center mt-6">
+      <button type="button" id="nextBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Suivant →</button>
+    </div>
+  </div>
+
+  <div class="text-center mt-6 text-[13px] text-neutral-400" id="pronoStats"></div>
+
+  <div class="mt-12 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+    <h2 class="font-display font-semibold mb-3">Les cinq pièges du francophone</h2>
+    <ul class="space-y-2.5 text-[13.5px] text-neutral-600 dark:text-neutral-300 leading-relaxed">
+      <li class="flex gap-2.5"><span class="text-accent-600 shrink-0">1.</span><span><b>Les diphtongues nasales ão, ãe, õe.</b> Le français a des voyelles nasales, mais pas de diphtongues nasales. <i>pão</i> n'est pas « pon ».</span></li>
+      <li class="flex gap-2.5"><span class="text-accent-600 shrink-0">2.</span><span><b>L'accent tonique.</b> Le français accentue la fin du groupe ; le portugais a un accent fixe par mot. <i>médico</i> se dit MÉ-di-co, pas mé-di-CO.</span></li>
+      <li class="flex gap-2.5"><span class="text-accent-600 shrink-0">3.</span><span><b>Les voyelles avalées.</b> Au Portugal, les voyelles non accentuées s'effacent presque. Sur-articuler trahit immédiatement.</span></li>
+      <li class="flex gap-2.5"><span class="text-accent-600 shrink-0">4.</span><span><b>Le « r » battu entre voyelles.</b> <i>caro</i> et <i>carro</i> n'ont pas le même « r ». Le français ne connaît que le second.</span></li>
+      <li class="flex gap-2.5"><span class="text-accent-600 shrink-0">5.</span><span><b>Le « s » qui chuinte.</b> En fin de mot ou devant consonne sourde, le « s » devient « ch » : <i>dois</i> se dit « doich ».</span></li>
+    </ul>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome('prononciation.html')){
+
+if(!micSupported) document.getElementById('micNoSupport').classList.remove('hidden');
+
+const levelVocab = vocabUpToLevel(placedLevel());
+const categories = [
+  {key:'traps',   label:'⚠️ Pièges',  pool: PRONUNCIATION_TRAPS},
+  {key:'lettres', label:'Lettres',    pool: alphaData.map(([l,name])=>({pt:name, fr:'le nom de la lettre '+l}))},
+  {key:'mots',    label:'Mots',       pool: (levelVocab.length >= 10 ? levelVocab : ALL_VOCAB).map(v=>({pt:v.pt, fr:v.fr}))},
+  {key:'phrases', label:'Phrases',    pool: ALL_PHRASES.length ? ALL_PHRASES.map(p=>({pt:p.pt, fr:p.fr})) : SENTENCE_POOL},
+];
+let currentCat = categories[0];
+let currentItem = null;
+
+function renderCatBtns(){
+  document.getElementById('catBtns').innerHTML = categories.map(c=>
+    `<button type="button" data-k="${c.key}" class="cat-btn text-[12.5px] font-semibold px-4 py-2 rounded-full border ${c.key===currentCat.key ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-neutral-900 dark:hover:border-white'} transition">${c.label}</button>`
+  ).join('');
+  document.querySelectorAll('.cat-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentCat = categories.find(c=>c.key===btn.dataset.k);
+      renderCatBtns();
+      nextItem();
+    });
+  });
+}
+function pickRandom(pool, exclude){
+  let it, tries=0;
+  do{ it = pool[Math.floor(Math.random()*pool.length)]; tries++; } while(exclude && it.pt===exclude.pt && pool.length>1 && tries<50);
+  return it;
+}
+function updateStats(){
+  const p = progress.pronunciation;
+  document.getElementById('pronoStats').textContent = p.attempts
+    ? `${p.attempts} tentatives · score moyen ${Math.round(p.scoreSum/p.attempts)}%`
+    : `Aucune tentative pour l'instant`;
+}
+function nextItem(){
+  currentItem = pickRandom(currentCat.pool, currentItem);
+  renderMicExercise(document.getElementById('pronoMount'), currentItem, ()=> updateStats());
+  updateStats();
+}
+renderCatBtns();
+nextItem();
+document.getElementById('nextBtn').addEventListener('click', nextItem);
+}
+</script>
+</body>
+</html>

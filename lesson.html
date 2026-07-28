@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leçon — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<div id="lockedMsg" class="hidden max-w-xl mx-auto px-5 py-24 text-center">
+  <div class="text-4xl mb-4">🔒</div>
+  <h1 class="font-display text-2xl font-bold mb-3">Ce module n'est pas encore débloqué</h1>
+  <p class="text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">Termine le module précédent pour y accéder. Les niveaux situés en dessous du tien restent ouverts en permanence.</p>
+  <a href="index.html" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold">Retour au parcours</a>
+</div>
+
+<div id="lessonRoot" class="hidden">
+  <section class="max-w-4xl mx-auto px-5 md:px-8 py-12 md:py-16">
+    <a href="index.html" class="text-[13px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">← Retour au parcours</a>
+    <div class="mt-4 mb-10">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[11px] font-bold px-2 py-1 rounded-md bg-accent-600 text-white" id="modLevelChip"></span>
+        <span class="text-[11px] font-semibold tracking-widest uppercase text-neutral-400" id="modIndex"></span>
+      </div>
+      <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight" id="modTitle"></h1>
+      <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-2xl" id="modDesc"></p>
+    </div>
+
+    <!-- Section nav -->
+    <div class="flex flex-wrap gap-1.5 mb-10 pb-6 border-b border-neutral-100 dark:border-neutral-900" id="sectionNav"></div>
+
+    <div id="modIntro" class="grid gap-3 mb-12"></div>
+
+    <div id="grammarSection" class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-6">Grammaire</h2>
+      <div id="grammarBody"></div>
+    </div>
+
+    <div id="fauxAmisSection" class="mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-5">Le tableau complet des faux-amis</h2>
+      <div id="fauxAmisList" class="grid gap-2.5"></div>
+    </div>
+
+    <div id="vocabSection" class="mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-2">Vocabulaire</h2>
+      <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Clique pour révéler, écoute avec 🔊, puis marque ce que tu connais — les mots marqués entrent dans le système de révision espacée.</p>
+      <div id="flashGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+    </div>
+
+    <div id="phrasesSection" class="mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-5">Phrases clés</h2>
+      <div id="phrasesList" class="grid gap-2.5"></div>
+    </div>
+
+    <div id="dialoguesSection" class="mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-5">Dialogues</h2>
+      <div id="dialoguesList" class="grid md:grid-cols-2 gap-5"></div>
+    </div>
+
+    <div id="readingSection" class="mb-12 hidden">
+      <h2 class="font-display font-semibold text-xl mb-5">Lecture</h2>
+      <div id="readingMount" class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8"></div>
+    </div>
+
+    <div id="memorySection" class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-7 mb-12 hidden">
+      <h3 class="font-display font-semibold text-lg mb-1">🧩 Memory rapide</h3>
+      <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">Associe les paires avant de passer au quiz.</p>
+      <div class="text-[12.5px] font-medium text-neutral-500 dark:text-neutral-400 mb-4" id="memoryStatsLine"></div>
+      <div id="memoryGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4"></div>
+      <button type="button" id="memoryNewBtn" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-2.5 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">🔄 Nouvelle partie</button>
+    </div>
+
+    <div id="quizSection">
+      <div class="flex flex-wrap items-end justify-between gap-2 mb-2">
+        <h2 class="font-display font-semibold text-xl">Quiz de fin de module</h2>
+        <span class="text-[12px] font-semibold px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400" id="tierChip"></span>
+      </div>
+      <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-6 max-w-xl leading-relaxed" id="quizIntro"></p>
+      <div id="quizRoot" class="max-w-2xl rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 shadow-softer">
+        <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-7"><div id="qProgressFill" class="h-full bg-accent-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+        <div id="qArea"></div>
+        <div id="qResult" class="hidden text-center"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome(null)){
+
+const params = new URLSearchParams(location.search);
+const moduleKey = params.get('module');
+const mod = MODULE_DATA[moduleKey];
+
+if(!mod || !MODULE_ORDER.includes(moduleKey) || !isModuleUnlocked(moduleKey)){
+  document.getElementById('lockedMsg').classList.remove('hidden');
+} else {
+  document.getElementById('lessonRoot').classList.remove('hidden');
+  const levelMods = modulesForLevel(mod.level);
+  document.getElementById('modLevelChip').textContent = mod.level;
+  document.getElementById('modIndex').textContent = `Module ${levelMods.indexOf(moduleKey)+1} sur ${levelMods.length} · ${LEVEL_INFO[mod.level].fr}`;
+  document.getElementById('modTitle').textContent = mod.icon + '  ' + mod.title;
+  document.getElementById('modDesc').textContent = mod.description;
+
+  const sections = [];
+
+  /* ---- Intro notes ---- */
+  if(mod.intro && mod.intro.length){
+    document.getElementById('modIntro').innerHTML = mod.intro.map(p=>
+      `<div class="rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 text-[14px] text-neutral-700 dark:text-neutral-300 leading-relaxed">${p}</div>`
+    ).join('');
+    sections.push(['modIntro','À retenir']);
+  }
+
+  /* ---- Grammar ---- */
+  if(mod.grammarTables && mod.grammarTables.length){
+    document.getElementById('grammarSection').classList.remove('hidden');
+    document.getElementById('grammarBody').innerHTML = mod.grammarTables.map(renderGrammarTable).join('');
+    sections.push(['grammarSection','Grammaire']);
+  }
+
+  /* ---- False friends (full table) ---- */
+  if(mod.isFauxAmis){
+    document.getElementById('fauxAmisSection').classList.remove('hidden');
+    document.getElementById('fauxAmisList').innerHTML = fauxAmis.map(([pt,sens,fr,note])=>`
+      <div class="grid sm:grid-cols-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <div class="p-4 border-b sm:border-b-0 sm:border-r border-neutral-200 dark:border-neutral-800">
+          <b class="flex items-center gap-1.5 text-neutral-900 dark:text-white">${pt} ${speakBtnHtml(pt)}</b>
+          <span class="text-[13px] text-neutral-500 dark:text-neutral-400">${sens}</span>
+        </div>
+        <div class="p-4 bg-neutral-50 dark:bg-neutral-900/50">
+          <b class="block text-neutral-900 dark:text-white text-[13.5px]">Ressemble à « ${fr} »</b>
+          <span class="text-[12.5px] text-neutral-500 dark:text-neutral-400">${note}</span>
+        </div>
+      </div>`).join('');
+    sections.push(['fauxAmisSection','Faux-amis']);
+  }
+
+  /* ---- Vocabulary + memory ---- */
+  if(mod.items && mod.items.length){
+    document.getElementById('vocabSection').classList.remove('hidden');
+    renderFlashGrid(document.getElementById('flashGrid'), mod.items, moduleKey);
+    sections.push(['vocabSection','Vocabulaire']);
+
+    if(mod.items.length >= 6){
+      document.getElementById('memorySection').classList.remove('hidden');
+      const pool = mod.items.map(([emoji,pt,fr])=>({pt,fr}));
+      const count = Math.min(8, pool.length);
+      let restart = startMemoryGame(document.getElementById('memoryGrid'), document.getElementById('memoryStatsLine'), pool, count);
+      document.getElementById('memoryNewBtn').addEventListener('click', ()=> restart = startMemoryGame(document.getElementById('memoryGrid'), document.getElementById('memoryStatsLine'), pool, count));
+    }
+  }
+
+  /* ---- Key phrases ---- */
+  if(mod.phrases && mod.phrases.length){
+    document.getElementById('phrasesSection').classList.remove('hidden');
+    document.getElementById('phrasesList').innerHTML = mod.phrases.map(p=>`
+      <div class="flex items-start justify-between gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4">
+        <div class="min-w-0">
+          <div class="font-display font-semibold text-[15px]">${p.pt}</div>
+          <div class="text-[13px] text-neutral-500 dark:text-neutral-400 mt-0.5">${p.fr}</div>
+        </div>
+        ${speakBtnHtml(p.pt,'🔊')}
+      </div>`).join('');
+    sections.push(['phrasesSection','Phrases']);
+  }
+
+  /* ---- Dialogues ---- */
+  if(mod.dialogues && mod.dialogues.length){
+    document.getElementById('dialoguesSection').classList.remove('hidden');
+    document.getElementById('dialoguesList').innerHTML = mod.dialogues.map(d=>`
+      <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+        <h4 class="font-display font-semibold mb-4">💬 ${d.title}</h4>
+        <div class="space-y-2.5">
+          ${d.lines.map(([spk,pt,fr])=>`
+            <div class="flex ${spk==='a' ? 'justify-start' : 'justify-end'}">
+              <div class="max-w-[88%] rounded-2xl px-4 py-2.5 text-[13px] ${spk==='a' ? 'bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800' : 'bg-accent-50 dark:bg-accent-950/50 border border-accent-100 dark:border-accent-900'}">
+                <div class="font-semibold flex items-center gap-1.5">${pt} ${speakBtnHtml(pt)}</div>
+                <div class="text-neutral-500 dark:text-neutral-400 mt-0.5">${fr}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+    sections.push(['dialoguesSection','Dialogues']);
+  }
+
+  /* ---- Reading ---- */
+  if(mod.reading){
+    document.getElementById('readingSection').classList.remove('hidden');
+    renderReadingExercise(document.getElementById('readingMount'), mod.reading, ()=>{
+      document.getElementById('quizSection').scrollIntoView({behavior:'smooth'});
+    });
+    sections.push(['readingSection','Lecture']);
+  }
+
+  sections.push(['quizSection','Quiz']);
+
+  /* ---- Section nav chips ---- */
+  document.getElementById('sectionNav').innerHTML = sections.map(([id,label])=>
+    `<a href="#${id}" class="text-[12.5px] font-semibold px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-neutral-900 dark:hover:border-white hover:text-neutral-900 dark:hover:text-white transition">${label}</a>`
+  ).join('');
+
+  /* ---- Adaptive quiz ---- */
+  document.getElementById('tierChip').textContent = 'Mode : ' + adaptLabel();
+  document.getElementById('quizIntro').textContent = {
+    1:"Questions à choix multiples : on vérifie que tu reconnais bien le vocabulaire avant d'exiger plus.",
+    2:"Choix multiples et textes à trous. Réponds juste régulièrement et les exercices deviendront plus exigeants.",
+    3:"Tu dois maintenant produire les réponses toi-même : traduction à écrire et conjugaison.",
+    4:"Niveau maximal : traduction libre et dictée. Si tu bloques, le système redescendra automatiquement.",
+  }[adaptTier()];
+
+  const levelPool = vocabUpToLevel(mod.level);
+  const quizItems = shuffle([
+    ...buildAdaptiveQuiz(mod, {pool: levelPool.length >= 8 ? levelPool : ALL_VOCAB}),
+    ...(mod.quizExtra || []),
+  ]).slice(0, 14);
+
+  runQuiz(document.getElementById('quizRoot'), quizItems, {
+    onFinish: (score,total)=>{
+      const pct = total ? score/total : 0;
+      const passed = pct >= 0.6;
+      if(passed) markModuleComplete(moduleKey, score, total);
+      refreshProgressWidgets();
+      const idx = MODULE_ORDER.indexOf(moduleKey);
+      const nextKey = MODULE_ORDER[idx+1];
+      const nextIsNewLevel = nextKey && MODULE_DATA[nextKey].level !== mod.level;
+      const examKey = CAPLE_ORDER.find(k => CAPLE_EXAMS[k].level === mod.level);
+      const levelDone = levelProgress(mod.level).done === levelProgress(mod.level).total;
+
+      document.getElementById('qResult').innerHTML = `
+        <div class="font-display text-5xl font-bold ${passed?'text-accent-700 dark:text-accent-400':'text-neutral-400'}">${score}<span class="text-2xl text-neutral-300 dark:text-neutral-700"> / ${total}</span></div>
+        <p class="text-neutral-500 dark:text-neutral-400 mt-4 mb-6 max-w-sm mx-auto leading-relaxed text-sm">${
+          passed
+            ? (levelDone && examKey
+                ? `🎉 Module réussi — et tu viens de terminer tout le niveau ${mod.level} ! C'est le moment de tenter l'examen ${CAPLE_EXAMS[examKey].code}.`
+                : '🎉 Module réussi. Le suivant est débloqué.')
+            : 'Il faut 60% pour valider. Relis la leçon et retente — les mots ratés reviendront aussi en révision.'
+        }</p>
+        <div class="flex justify-center gap-2 flex-wrap">
+          ${passed && levelDone && examKey ? `<a href="exame.html?exam=${examKey}" class="inline-flex items-center gap-2 rounded-xl bg-accent-600 text-white px-5 py-3 text-sm font-semibold hover:bg-accent-700 transition">🎓 Passer l'examen ${CAPLE_EXAMS[examKey].code}</a>` : ''}
+          ${passed && nextKey ? `<a href="lesson.html?module=${nextKey}" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">${nextIsNewLevel ? `Niveau ${MODULE_DATA[nextKey].level} : ` : 'Suivant : '}${MODULE_DATA[nextKey].title} →</a>` : ''}
+          <a href="index.html" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Retour au parcours</a>
+          <button type="button" onclick="location.reload()" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Refaire le quiz</button>
+        </div>`;
+    }
+  });
+}
+}
+</script>
+</body>
+</html>

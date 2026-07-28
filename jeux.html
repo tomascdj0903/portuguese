@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeux — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-5xl mx-auto px-5 md:px-8 py-14 md:py-20">
+  <div class="max-w-2xl mb-10">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Entraînement libre</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Jeux</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed">Quatre façons de réviser sans avoir l'impression de travailler. Le vocabulaire proposé s'adapte à ton niveau.</p>
+  </div>
+
+  <!-- Level filter -->
+  <div class="flex flex-wrap items-center gap-2 mb-10">
+    <span class="text-[12.5px] text-neutral-500 dark:text-neutral-400 mr-1">Vocabulaire :</span>
+    <div class="flex flex-wrap gap-1.5" id="levelFilter"></div>
+  </div>
+
+  <!-- Memory -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-1">
+      <h2 class="font-display font-semibold text-lg">🧩 Memory</h2>
+      <div class="flex items-center gap-1.5" id="memoryCountBtns"></div>
+    </div>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Retrouve les paires portugais / français.</p>
+    <div class="text-[12.5px] font-medium text-neutral-500 dark:text-neutral-400 mb-4" id="memoryStatsLine"></div>
+    <div id="memoryGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4"></div>
+    <button type="button" id="memoryNewBtn" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-4 py-2.5 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">🔄 Nouvelle partie</button>
+  </div>
+
+  <!-- Listening -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-6">
+    <h2 class="font-display font-semibold text-lg mb-1">🎧 Écoute &amp; choisis</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Écoute le mot et choisis la bonne traduction. Le son se lance tout seul à chaque tour.</p>
+    <div class="text-center mb-5">
+      <button type="button" id="listenPlayBtn" class="w-16 h-16 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-2xl flex items-center justify-center hover:scale-105 transition mx-auto">🔊</button>
+    </div>
+    <div id="listenOpts" class="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto mb-4"></div>
+    <div class="text-[12.5px] font-medium text-neutral-500 dark:text-neutral-400 text-center" id="listenStatsLine"></div>
+  </div>
+
+  <!-- Sentence builder -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 mb-6">
+    <h2 class="font-display font-semibold text-lg mb-1">🧱 Constructeur de phrases</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Remets les mots dans l'ordre. Attention à la place des pronoms, c'est justement le piège.</p>
+    <div id="sentenceMount" class="max-w-lg mx-auto"></div>
+    <div class="text-[12.5px] font-medium text-neutral-500 dark:text-neutral-400 text-center mt-4" id="sentenceStatsLine"></div>
+  </div>
+
+  <!-- Speed translation -->
+  <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8">
+    <h2 class="font-display font-semibold text-lg mb-1">⚡ Traduction éclair</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Écris le mot portugais le plus vite possible. 60 secondes, combien tu en places ?</p>
+    <div id="speedMount" class="max-w-md mx-auto"></div>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome('jeux.html')){
+
+/* ---- Level filter: default to everything up to her level ---- */
+let filterLevel = placedLevel();
+function currentPool(){
+  const v = filterLevel === 'all' ? ALL_VOCAB : vocabUpToLevel(filterLevel);
+  return v.length >= 8 ? v.map(x=>({pt:x.pt, fr:x.fr})) : ALL_VOCAB.map(x=>({pt:x.pt, fr:x.fr}));
+}
+function currentSentences(){
+  if(filterLevel === 'all') return SENTENCE_POOL;
+  const idx = LEVELS.indexOf(filterLevel);
+  const s = SENTENCE_POOL.filter(p => LEVELS.indexOf(p.level) <= idx);
+  return s.length >= 3 ? s : SENTENCE_POOL;
+}
+
+function renderLevelFilter(){
+  const opts = [...LEVELS, 'all'];
+  document.getElementById('levelFilter').innerHTML = opts.map(lv=>{
+    const label = lv === 'all' ? 'Tout' : 'jusqu\'à ' + lv;
+    const active = lv === filterLevel;
+    return `<button type="button" data-lv="${lv}" class="lvl-btn text-[12px] font-semibold px-3 py-1.5 rounded-full border ${active ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-neutral-900 dark:hover:border-white'} transition">${label}</button>`;
+  }).join('');
+  document.querySelectorAll('.lvl-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      filterLevel = btn.dataset.lv;
+      renderLevelFilter();
+      restartAll();
+    });
+  });
+}
+
+/* ---- Memory ---- */
+const memCounts = [6, 8, 12];
+let memoryCount = 8, restartMemory = null;
+function renderMemoryCountBtns(){
+  document.getElementById('memoryCountBtns').innerHTML = memCounts.map(c=>
+    `<button type="button" data-c="${c}" class="mem-count-btn text-[12px] font-semibold px-3 py-1.5 rounded-full border ${c===memoryCount ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-neutral-900 dark:hover:border-white'} transition">${c} paires</button>`
+  ).join('');
+  document.querySelectorAll('.mem-count-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ memoryCount = parseInt(btn.dataset.c); renderMemoryCountBtns(); startMemory(); });
+  });
+}
+function startMemory(){
+  restartMemory = startMemoryGame(document.getElementById('memoryGrid'), document.getElementById('memoryStatsLine'), currentPool(), memoryCount);
+}
+document.getElementById('memoryNewBtn').addEventListener('click', ()=> startMemory());
+
+/* ---- Speed translation ---- */
+function startSpeedGame(mount, pool){
+  let running = false, left = 60, score = 0, tries = 0, current = null, tid = null;
+
+  function pick(){ return pool[Math.floor(Math.random()*pool.length)]; }
+  function renderIdle(){
+    mount.innerHTML = `
+      <div class="text-center">
+        <div class="font-display text-4xl font-bold mb-2" id="spBest">${(progress.speed && progress.speed.best) || 0}</div>
+        <div class="text-[12.5px] text-neutral-400 mb-6">meilleur score</div>
+        <button type="button" id="spStart" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Lancer 60 secondes →</button>
+      </div>`;
+    mount.querySelector('#spStart').addEventListener('click', start);
+  }
+  function start(){
+    running = true; left = 60; score = 0; tries = 0;
+    mount.innerHTML = `
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[12.5px] font-semibold text-neutral-500 dark:text-neutral-400" id="spScore">0 / 0</span>
+        <span class="font-display font-bold tabular-nums" id="spTime">60</span>
+      </div>
+      <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-6"><div id="spFill" class="h-full bg-accent-600 rounded-full" style="width:100%"></div></div>
+      <div class="text-center mb-4">
+        <div class="text-[11px] uppercase tracking-widest text-neutral-400 mb-1">Traduis en portugais</div>
+        <div class="font-display text-2xl font-bold" id="spWord"></div>
+      </div>
+      <input type="text" id="spIn" autocomplete="off" autocapitalize="off" spellcheck="false"
+        class="w-full px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[15px] text-center focus:outline-none focus:border-neutral-900 dark:focus:border-white transition" placeholder="…">
+      ${accentBarHtml()}
+      <div class="text-center mt-3 min-h-[22px] text-[13px] font-semibold" id="spFb"></div>`;
+    const input = mount.querySelector('#spIn');
+    wireAccentBar(mount, input);
+    input.focus();
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
+    next();
+    tid = setInterval(()=>{
+      left--;
+      mount.querySelector('#spTime').textContent = left;
+      mount.querySelector('#spFill').style.width = (left/60*100)+'%';
+      if(left<=0) stop();
+    }, 1000);
+  }
+  function next(){
+    current = pick();
+    mount.querySelector('#spWord').textContent = current.fr;
+    mount.querySelector('#spIn').value = '';
+  }
+  function submit(){
+    if(!running) return;
+    const input = mount.querySelector('#spIn');
+    if(!input.value.trim()) return;
+    tries++;
+    const res = checkAnswer(input.value, [current.pt]);
+    if(res.correct) score++;
+    const fb = mount.querySelector('#spFb');
+    fb.textContent = res.correct ? '✓ ' + current.pt : '✗ ' + current.pt;
+    fb.className = 'text-center mt-3 min-h-[22px] text-[13px] font-semibold ' + (res.correct ? 'text-accent-600' : 'text-rose-500');
+    mount.querySelector('#spScore').textContent = score + ' / ' + tries;
+    next();
+  }
+  function stop(){
+    running = false;
+    clearInterval(tid);
+    if(!progress.speed) progress.speed = {best:0, games:0};
+    progress.speed.games++;
+    if(score > progress.speed.best) progress.speed.best = score;
+    saveProgress();
+    mount.innerHTML = `
+      <div class="text-center">
+        <div class="text-3xl mb-3">${score >= 15 ? '🏆' : score >= 8 ? '🎉' : '💪'}</div>
+        <div class="font-display text-5xl font-bold text-accent-700 dark:text-accent-400">${score}</div>
+        <div class="text-[13px] text-neutral-500 dark:text-neutral-400 mt-2 mb-6">bonnes réponses sur ${tries} tentatives${score >= progress.speed.best ? ' — nouveau record !' : ` (record : ${progress.speed.best})`}</div>
+        <button type="button" id="spAgain" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-6 py-3.5 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Rejouer →</button>
+      </div>`;
+    mount.querySelector('#spAgain').addEventListener('click', start);
+  }
+  renderIdle();
+  return { stop: ()=>{ running=false; clearInterval(tid); } };
+}
+
+/* ---- Wire everything ---- */
+let speedGame = null;
+function restartAll(){
+  startMemory();
+  // These two games attach listeners to persistent nodes, so swap the nodes
+  // out before restarting — otherwise listeners stack and answers count twice.
+  const oldPlay = document.getElementById('listenPlayBtn');
+  oldPlay.replaceWith(oldPlay.cloneNode(true));
+  const oldSent = document.getElementById('sentenceMount');
+  oldSent.replaceWith(oldSent.cloneNode(false));
+
+  document.getElementById('listenOpts').innerHTML = '';
+  startListeningGame(document.getElementById('listenPlayBtn'), document.getElementById('listenOpts'), document.getElementById('listenStatsLine'), currentPool());
+  startSentenceGame(document.getElementById('sentenceMount'), document.getElementById('sentenceStatsLine'), currentSentences());
+  if(speedGame) speedGame.stop();
+  speedGame = startSpeedGame(document.getElementById('speedMount'), currentPool());
+}
+
+renderLevelFilter();
+renderMemoryCountBtns();
+startMemory();
+startListeningGame(document.getElementById('listenPlayBtn'), document.getElementById('listenOpts'), document.getElementById('listenStatsLine'), currentPool());
+startSentenceGame(document.getElementById('sentenceMount'), document.getElementById('sentenceStatsLine'), currentSentences());
+speedGame = startSpeedGame(document.getElementById('speedMount'), currentPool());
+}
+</script>
+</body>
+</html>

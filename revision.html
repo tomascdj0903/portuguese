@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Révision — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-3xl mx-auto px-5 md:px-8 py-14 md:py-20">
+  <div class="mb-10">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Répétition espacée</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Révision du jour</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-2xl">Chaque mot revient juste avant le moment où tu l'aurais oublié. Réussis-le, et il s'espace : 1 jour, 3 jours, une semaine, un mois. Rate-le, et il revient dès demain. C'est le mécanisme qui transforme le vocabulaire reconnu en vocabulaire su.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-3 gap-3 mb-10">
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="text-[11px] text-neutral-400 mb-1">À réviser</div>
+      <div class="font-display font-bold text-2xl" id="statDue">0</div>
+    </div>
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="text-[11px] text-neutral-400 mb-1">En cours</div>
+      <div class="font-display font-bold text-2xl" id="statScheduled">0</div>
+    </div>
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="text-[11px] text-neutral-400 mb-1">Mémorisés</div>
+      <div class="font-display font-bold text-2xl text-accent-600 dark:text-accent-400" id="statMastered">0</div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="hidden text-center rounded-3xl border border-neutral-200 dark:border-neutral-800 p-10">
+    <div class="text-4xl mb-4" id="emptyIcon">✅</div>
+    <h2 class="font-display text-xl font-bold mb-3" id="emptyTitle">Rien à réviser pour l'instant</h2>
+    <p class="text-neutral-500 dark:text-neutral-400 mb-7 max-w-sm mx-auto leading-relaxed text-sm" id="emptyText"></p>
+    <div class="flex justify-center gap-2 flex-wrap" id="emptyActions"></div>
+  </div>
+
+  <!-- Session -->
+  <div id="sessionRoot" class="hidden">
+    <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 shadow-softer" id="quizRoot">
+      <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-7"><div id="qProgressFill" class="h-full bg-accent-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+      <div id="qArea"></div>
+      <div id="qResult" class="hidden text-center"></div>
+    </div>
+  </div>
+
+  <!-- Upcoming schedule -->
+  <div class="mt-12" id="scheduleSection">
+    <h2 class="font-display font-semibold text-lg mb-1">Ton calendrier de mémoire</h2>
+    <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-5">Quand chaque mot va revenir.</p>
+    <div id="scheduleList" class="grid sm:grid-cols-2 gap-2.5"></div>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data-core.js"></script>
+<script src="shared/curriculum-a.js"></script>
+<script src="shared/curriculum-b.js"></script>
+<script src="shared/curriculum-c.js"></script>
+<script src="shared/exams.js"></script>
+<script src="shared/app.js"></script>
+<script src="shared/srs.js"></script>
+<script src="shared/exercises.js"></script>
+<script>
+if(initSharedChrome('revision.html')){
+
+/* Map an SRS key back to the vocabulary entry it came from.
+   Keys are stored as "moduleKey::pt". */
+function entryForKey(key){
+  const sep = key.indexOf('::');
+  if(sep < 0) return null;
+  const moduleKey = key.slice(0, sep), pt = key.slice(sep+2);
+  const mod = MODULE_DATA[moduleKey];
+  if(!mod || !mod.items) return null;
+  const found = mod.items.find(it => it[1] === pt);
+  if(!found) return null;
+  return { key, module: moduleKey, level: mod.level, emoji: found[0], pt: found[1], fr: found[2] };
+}
+
+const dueKeys = srsDueKeys();
+const dueEntries = dueKeys.map(entryForKey).filter(Boolean);
+
+document.getElementById('statDue').textContent = dueEntries.length;
+document.getElementById('statScheduled').textContent = srsScheduledCount();
+document.getElementById('statMastered').textContent = srsMasteredCount();
+
+/* ---- Upcoming schedule ---- */
+const allKeys = Object.keys(progress.srs || {});
+const scheduled = allKeys.map(entryForKey).filter(Boolean)
+  .map(e => ({...e, card: srsGet(e.key)}))
+  .sort((a,b) => a.card.due - b.card.due)
+  .slice(0, 12);
+if(scheduled.length){
+  document.getElementById('scheduleList').innerHTML = scheduled.map(e=>{
+    const mastered = srsIsMastered(e.key);
+    return `<div class="flex items-center justify-between gap-3 rounded-xl border ${mastered ? 'border-accent-200 dark:border-accent-900' : 'border-neutral-200 dark:border-neutral-800'} px-4 py-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="shrink-0">${e.emoji}</span>
+        <div class="min-w-0">
+          <div class="font-semibold text-[13.5px] truncate">${e.pt}</div>
+          <div class="text-[11.5px] text-neutral-500 dark:text-neutral-400 truncate">${e.fr}</div>
+        </div>
+      </div>
+      <span class="text-[11px] font-semibold shrink-0 ${mastered ? 'text-accent-600' : 'text-neutral-400'}">${srsDueLabel(e.card)}</span>
+    </div>`;
+  }).join('');
+} else {
+  document.getElementById('scheduleSection').classList.add('hidden');
+}
+
+/* ---- Build the session ---- */
+if(!dueEntries.length){
+  const empty = document.getElementById('emptyState');
+  empty.classList.remove('hidden');
+  if(srsScheduledCount() === 0){
+    document.getElementById('emptyIcon').textContent = '🌱';
+    document.getElementById('emptyTitle').textContent = "Ta mémoire n'a pas encore de matière";
+    document.getElementById('emptyText').textContent = "Fais un module et marque les mots que tu connais : ils entreront alors dans le système de révision et reviendront automatiquement au bon moment.";
+    document.getElementById('emptyActions').innerHTML = `<a href="lesson.html?module=${nextModuleKey()}" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Commencer un module →</a>`;
+  } else {
+    document.getElementById('emptyIcon').textContent = '✅';
+    document.getElementById('emptyTitle').textContent = "Tout est à jour";
+    const next = scheduled[0];
+    document.getElementById('emptyText').textContent = next
+      ? `Aucun mot n'est dû aujourd'hui. Le prochain revient ${srsDueLabel(next.card)}. Ne force pas : réviser trop tôt n'apporte rien.`
+      : "Aucun mot n'est dû aujourd'hui.";
+    document.getElementById('emptyActions').innerHTML = `
+      <a href="lesson.html?module=${nextModuleKey()}" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Apprendre du nouveau →</a>
+      <a href="jeux.html" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Jouer un peu</a>`;
+  }
+} else {
+  document.getElementById('sessionRoot').classList.remove('hidden');
+
+  /* Each due word is tested in a way that matches how well it's known:
+     shaky words get multiple choice, solid words must be produced. */
+  const pool = ALL_VOCAB;
+  function distractors(fr, n){
+    const cands = shuffle(pool.filter(v => v.fr !== fr));
+    const out = [];
+    for(const c of cands){ if(out.length>=n) break; if(!out.includes(c.fr)) out.push(c.fr); }
+    while(out.length<n) out.push('—');
+    return out;
+  }
+
+  const items = shuffle(dueEntries).slice(0, 20).map(e=>{
+    const card = srsGet(e.key) || {};
+    const reps = card.reps || 0;
+    const tier = adaptTier();
+    // Weak card, or learner struggling → recognition. Strong card → production.
+    if(reps === 0 || tier === 1){
+      const o = shuffle([e.fr, ...distractors(e.fr,3)]);
+      return {type:'mcq', q:`Que veut dire « ${e.pt} » ?`, opts:o, a:o.indexOf(e.fr), srsKey:e.key};
+    }
+    if(reps === 1){
+      const o = shuffle([e.fr, ...distractors(e.fr,3)]);
+      return {type:'listen', q:'Écoute et choisis la bonne traduction :', audio:e.pt, opts:o, a:o.indexOf(e.fr), srsKey:e.key};
+    }
+    if(reps >= 4 && tier >= 3){
+      return {type:'dictation', pt:e.pt, fr:e.fr, srsKey:e.key};
+    }
+    return {type:'write', pt:e.pt, fr:e.fr, srsKey:e.key};
+  });
+
+  runQuiz(document.getElementById('quizRoot'), items, {
+    onFinish: (score,total)=>{
+      const remaining = srsDueCount();
+      document.getElementById('qResult').innerHTML = `
+        <div class="text-4xl mb-3">${score === total ? '🏆' : score >= total*0.7 ? '🎉' : '💪'}</div>
+        <div class="font-display text-5xl font-bold text-accent-700 dark:text-accent-400">${score}<span class="text-2xl text-neutral-300 dark:text-neutral-700"> / ${total}</span></div>
+        <p class="text-neutral-500 dark:text-neutral-400 mt-4 mb-6 max-w-sm mx-auto leading-relaxed text-sm">
+          Séance terminée. Les mots réussis s'espacent, les mots ratés reviennent dès demain.
+          ${remaining ? `<br><b class="text-neutral-700 dark:text-neutral-300">${remaining} mot${remaining>1?'s':''}</b> encore à réviser aujourd'hui.` : '<br>Plus rien à réviser aujourd\'hui.'}
+        </p>
+        <div class="flex justify-center gap-2 flex-wrap">
+          ${remaining ? `<button type="button" onclick="location.reload()" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Continuer la révision →</button>` : ''}
+          <a href="index.html" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Retour au parcours</a>
+        </div>`;
+      document.getElementById('statDue').textContent = remaining;
+      document.getElementById('statMastered').textContent = srsMasteredCount();
+    }
+  });
+}
+}
+</script>
+</body>
+</html>
