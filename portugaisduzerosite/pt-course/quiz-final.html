@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examen final — Português.zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="shared/tailwind-config.js"></script>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans antialiased transition-colors duration-300">
+<div id="scrollbar"></div>
+<div id="app-header"></div>
+<div id="app-modal-root"></div>
+
+<section class="max-w-3xl mx-auto px-5 md:px-8 py-16 md:py-20">
+  <div class="mb-10">
+    <div class="text-[11px] font-semibold tracking-widest uppercase text-accent-600 dark:text-accent-400 mb-3">Bilan</div>
+    <h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Examen final</h1>
+    <p class="mt-4 text-neutral-500 dark:text-neutral-400 leading-relaxed">16 questions qui couvrent tout le programme : vocabulaire, grammaire, écoute et prononciation. Refais-le autant de fois que tu veux — ton meilleur score est conservé.</p>
+    <div class="mt-5 inline-flex items-center gap-2 text-[13px] text-neutral-500 dark:text-neutral-400" id="bestScoreLine"></div>
+  </div>
+  <div id="quizRoot" class="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-7 md:p-9 shadow-softer">
+    <div class="h-1 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-7"><div id="qProgressFill" class="h-full bg-accent-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+    <div id="qArea"></div>
+    <div id="qResult" class="hidden"></div>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="shared/data.js"></script>
+<script src="shared/app.js"></script>
+<script>
+initSharedChrome('quiz-final.html');
+
+function refreshBestLine(){
+  const q = progress.quizFinal;
+  document.getElementById('bestScoreLine').textContent = q.attempts
+    ? `Meilleur score : ${q.best} / ${q.total} en ${q.attempts} tentative${q.attempts>1?'s':''}`
+    : `Pas encore tenté`;
+}
+refreshBestLine();
+
+function startExam(){
+  const root = document.getElementById('quizRoot');
+  root.querySelector('#qArea').classList.remove('hidden');
+  root.querySelector('#qResult').classList.add('hidden');
+  root.querySelector('#qResult').innerHTML = '';
+  runQuiz(root, shuffle(quizFinalData), {
+    onFinish: (score,total)=>{
+      progress.quizFinal.attempts++;
+      if(score > progress.quizFinal.best) progress.quizFinal.best = score;
+      saveProgress();
+      refreshProgressWidgets();
+      refreshBestLine();
+      const pct = score/total;
+      const passed = pct >= 0.7;
+      root.querySelector('#qResult').innerHTML = `
+        <div class="text-center">
+          <div class="font-display text-5xl font-bold ${passed?'text-accent-700 dark:text-accent-400':'text-neutral-400'}">${score}<span class="text-2xl text-neutral-300 dark:text-neutral-700"> / ${total}</span></div>
+          <p class="text-neutral-500 dark:text-neutral-400 mt-4 mb-6 max-w-sm mx-auto leading-relaxed text-sm">${passed ? '🎓 Parabéns! Tu maîtrises bien les bases du portugais.' : 'Continue à réviser les modules et retente — 70% pour valider.'}</p>
+          <div class="flex justify-center gap-2 flex-wrap">
+            <a href="index.html" class="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm font-semibold hover:border-neutral-900 dark:hover:border-white transition">Retour au parcours</a>
+            <button type="button" id="retryBtn" class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 text-sm font-semibold hover:bg-neutral-700 dark:hover:bg-neutral-200 transition">Refaire l'examen</button>
+          </div>
+        </div>`;
+      root.querySelector('#retryBtn').addEventListener('click', startExam);
+    }
+  });
+}
+startExam();
+</script>
+</body>
+</html>
